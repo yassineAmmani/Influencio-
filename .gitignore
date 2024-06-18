@@ -1,0 +1,21 @@
+
+### Git Ignore Files
+
+#### Root `.gitignore`
+```gitignore
+# Node.js
+client/node_modules
+client/.next
+
+# Java
+server/target
+server/.idea
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.iml
