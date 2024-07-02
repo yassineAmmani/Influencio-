@@ -2,8 +2,12 @@ package com.influencio.server.service;
 
 import com.influencio.server.dto.ApifyRequest;
 import com.influencio.server.dto.ApifyResponse;
+import com.influencio.server.dto.InfluencerListRequest;
+import com.influencio.server.dto.InfluencerListResponse;
 import com.influencio.server.model.Influencer;
+import com.influencio.server.model.InfluencerListItem;
 import com.influencio.server.repository.InfluencerRepository;
+import com.influencio.server.repository.InfluencerListItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,17 +31,21 @@ public class ApifyService {
 
     @Value("${apify.actor.id}")
     private String apifyActorId;
+    @Value("${apify.actor.id2}")
+    private String apifyActorId2;
 
     @Value("${image.storage.path}")
     private String imageStoragePath;
 
     private final RestTemplate restTemplate;
     private final InfluencerRepository influencerRepository;
+    private final InfluencerListItemRepository influencerListItemRepository;
 
     @Autowired
-    public ApifyService(RestTemplate restTemplate, InfluencerRepository influencerRepository) {
+    public ApifyService(RestTemplate restTemplate, InfluencerRepository influencerRepository, InfluencerListItemRepository influencerListItemRepository) {
         this.restTemplate = restTemplate;
         this.influencerRepository = influencerRepository;
+        this.influencerListItemRepository = influencerListItemRepository;
     }
 
     public void scrapeAndSaveInfluencerData(ApifyRequest request) {
@@ -70,6 +78,28 @@ public class ApifyService {
                 influencerRepository.save(influencer);
             }
         }
+    }
+    public List<InfluencerListResponse> scrapeAndSaveInfluencerList(InfluencerListRequest request) {
+        String url = String.format("https://api.apify.com/v2/acts/%s/run-sync-get-dataset-items?token=%s", apifyActorId2, apifyToken);
+
+        InfluencerListResponse[] response = restTemplate.postForObject(url, request, InfluencerListResponse[].class);
+
+        if (response != null) {
+            List<InfluencerListResponse> responseList = Arrays.asList(response);
+            for (InfluencerListResponse item : responseList) {
+                InfluencerListItem influencerListItem = new InfluencerListItem();
+                influencerListItem.setSearchTerm(item.getSearchTerm());
+                influencerListItem.setInputUrl(item.getInputUrl());
+                influencerListItem.setUsername(item.getUsername());
+                influencerListItem.setFollowersCount(item.getFollowersCount());
+
+                influencerListItemRepository.save(influencerListItem);
+            }
+
+            return responseList;
+        }
+
+        return List.of();
     }
 
     private String downloadAndSaveImage(String imageUrl, String username) throws IOException {

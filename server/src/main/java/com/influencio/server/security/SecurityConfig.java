@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/instagram/scrape").permitAll()
                 .requestMatchers("/influencer").permitAll()
+                .requestMatchers("/api/instagram/scrape-list").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic( (httpBasic) -> httpBasic.disable());

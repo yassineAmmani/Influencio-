@@ -1,16 +1,18 @@
 package com.influencio.server.controller;
 
 import com.influencio.server.dto.ApifyRequest;
+import com.influencio.server.dto.InfluencerListRequest;
+import com.influencio.server.dto.InfluencerListResponse;
 import com.influencio.server.service.ApifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/instagram")
+@CrossOrigin(origins = "http://localhost:3000")
 public class InstagramScraperController {
 
     private final ApifyService apifyService;
@@ -26,4 +28,9 @@ public class InstagramScraperController {
         return ResponseEntity.ok("Scraping process initiated");
     }
 
+    @PostMapping("/scrape-list")
+    public ResponseEntity<List<InfluencerListResponse>> scrapeInfluencerList(@RequestBody InfluencerListRequest request) {
+        List<InfluencerListResponse> response = apifyService.scrapeAndSaveInfluencerList(request);
+        return ResponseEntity.ok(response);
+    }
 }
